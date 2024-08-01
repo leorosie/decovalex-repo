@@ -1,0 +1,47 @@
+read / octree_dfn.inp / mo1 
+
+cmo / printatt / mo1 / -xyz- / minmax
+
+pset / p_repo / geom / xyz / 1, 0, 0 / -510 -354 -5 / 510 354 5 / 0,0,0
+
+cmo / addatt / mo1 / repo / vint / scalar / nnodes
+cmo / setatt / mo1 / repo / 1 0 0 / 0
+cmo / setatt / mo1 / repo / pset, get,p_repo / 1
+cmo / setatt / mo1 / imt / pset, get, p_repo / 2
+
+define / ZONE / 1
+define / FOUT / repo
+pset / p_repo / zone / FOUT/ ascii / ZONE
+
+
+cmo / modatt / mo1 / isn / ioflag / l
+cmo / modatt / mo1 / x_four / ioflag / l
+cmo / modatt / mo1 / fac_n / ioflag / l
+cmo / modatt / mo1 / dfield / ioflag / l
+cmo / modatt / mo1 / rf_field / ioflag / l
+cmo / modatt / mo1 / a_b / ioflag / l
+cmo / modatt / mo1 / b_a / ioflag / l
+cmo / modatt / mo1 / xnorm / ioflag / l
+cmo / modatt / mo1 / ynorm / ioflag / l
+cmo / modatt / mo1 / znorm / ioflag / l
+cmo / modatt / mo1 / evol_one / ioflag / l
+cmo / modatt / mo1 / evol_all / ioflag / l
+cmo / modatt / mo1 / numbnd / ioflag / l
+cmo / modatt / mo1 / id_numb / ioflag / l
+cmo / modatt / mo1 / evol_all / ioflag / l
+cmo / modatt / mo1 / itp / ioflag / l
+cmo / modatt / mo1 / icr / ioflag / l
+cmo / modatt / mo1 / meshid / ioflag / l
+cmo / modatt / mo1 / id_n_1 / ioflag / l
+cmo / modatt / mo1 / id_n_2 / ioflag / l
+cmo / modatt / mo1 / pt_gtg / ioflag / l
+cmo / modatt / mo1 / pt_gtg / ioflag / l
+cmo / modatt / mo1 / top / ioflag / l
+cmo / modatt / mo1 / right / ioflag / l
+cmo / modatt / mo1 / fracture / ioflag / l
+
+# Dump out Material ID Dat file
+dump / avs2 / materialid.dat / mo1 / 0 0 2 0
+
+
+dump / tmp.inp / mo1 
