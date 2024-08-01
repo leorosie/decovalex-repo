@@ -39,6 +39,7 @@ cmo / modatt / mo1 / pt_gtg / ioflag / l
 cmo / modatt / mo1 / top / ioflag / l
 cmo / modatt / mo1 / right / ioflag / l
 cmo / modatt / mo1 / fracture / ioflag / l
+cmo / modatt / mo1 / repo / ioflag / l
 
 # Dump out Material ID Dat file
 dump / avs2 / materialid.dat / mo1 / 0 0 2 0
