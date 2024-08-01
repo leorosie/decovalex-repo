@@ -1,0 +1,71 @@
+
+========================================================
+            Network Generation Complete
+========================================================
+Version of DFNGen: 2.2
+Time Stamp: Thu Aug  1 08:13:56 2024
+
+
+________________________________________________________
+
+Statistics Before Isolated Fractures Removed:
+
+Fractures: 3
+Truncated: 0
+
+Total Surface Area:     4.33223e+06 m^2
+Total Fracture Density   (P30): 1e-08
+Total Fracture Intensity (P32): 0.0144408
+User Defined: 
+    Surface Area: 4.33223e+06 m^2
+    Fracture Intensity (P32): 0.0144408
+
+
+________________________________________________________
+
+Statistics After Isolated Fractures Removed:
+Final Number of Fractures: 3
+Isolated Fractures Removed: 0
+Fractures before isolated fractures removed:: 3
+
+Total Surface Area:     4.33223e+06 m^2
+Total Fracture Density   (P30): 1e-08
+Total Fracture Intensity (P32): 0.0144408
+User Defined Shapes: 
+    Surface Area: 4.33223e+06 m^2
+    Fracture Intensity (P32): 0.0144408
+
+
+________________________________________________________
+
+
+3 Fractures Accepted (Before Isolated Fracture Removal)
+3 Final Fractures (After Isolated Fracture Removal)
+
+Total Fractures Rejected: 0
+Total Fractures Re-translated: 0
+
+Number of Triple Intersection Points (Before Isolated Fracture Removal): 0
+
+Intersection Statistics:
+    Number of Intersections: 0 
+    Intersections Shortened: 0 
+    Original Intersection (Before Intersection Shrinking) Length: 0 m
+    Intersection Length Discarded: 0 m
+    Final Intersection Length: 0 m
+
+Rejection Statistics: 
+    0 Short Intersections 
+    0 Close to Node
+    0 Close to Edge
+    0 Vertice Close to Edge
+    0 Outside of Domain
+    0 Triple intersection Rejections
+    0 Intersections Close to Other Intersections
+
+
+________________________________________________________
+
+Seed: 1
+
+Lagrit Should Remove 0 Nodes (0/2 - 0)
