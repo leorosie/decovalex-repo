@@ -1,0 +1,1721 @@
+ 
+ 
+*               * * * * * * * * * * * * * * * * * * * * * * * *                 
+*               *                                             *                 
+*               *    Program:  LaGriT V3.3.3   Linux          *                 
+*               *    Date Compile: 2023/02/20                 *                 
+*               *    Run Time: 2024/Aug  1  08:13:56          *                 
+*               *    Manual:   https://lagrit.lanl.gov        *                 
+*               *                                             *                 
+*               * * * * * * * * * * * * * * * * * * * * * * * *                 
+ 
+                               -----oOo-----                                    
+             LaGriT V3 LA-CC-15-069  https://github.com/lanl/LaGriT             
+  Copyright 2016. Triad National Security, LLC.  All rights reserved. This      
+  program was produced under U.S. Government contract 89233218CNA000001         
+  for Los Alamos National Laboratory (LANL), which is operated by Triad         
+  National Security, LLC for the U.S. Department of Energy/National Nuclear     
+  Security Administration.  All rights in the program are reserved by Triad     
+  National Security, LLC, and the U.S. Department of Energy/National Nuclear    
+  Security Administration. The Government is granted for itself and others      
+  acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license   
+  in this material to reproduce, prepare derivative works, distribute copies    
+  to the public, perform publicly and display publicly, and to permit others to 
+  do so. This software is open source and available under the BSD-3 License.    
+                               -----oOo-----                                    
+ 
+ 
+Output log file: driver_octree_start.lgi.out                                    
+Command log file: driver_octree_start.lgi.log                                   
+ 
+#                                                                               
+# LaGriT control files to build an octree refined hex mesh with refinement      
+# based on intersection of hex mesh with a DFN triangulation mesh               
+#                                                                               
+# driver_octree.lgi                                                             
+#   parameters_octree_dfn.mlgi                                                  
+#   build_octree.mlgi                                                           
+#       intersect_refine.mlgi                                                   
+#   hex_to_tet.mlgi                                                             
+#   remove_cells.mlgi                                                           
+#                                                                               
+# Define some parameters                                                        
+#                                                                               
+infile parameters_octree_dfn.mlgi                                               
+#                                                                               
+# Define some parameters                                                        
+#                                                                               
+# Input DFN mesh                                                                
+#                                                                               
+define/FTYPE/avs                                                                
+define/FNAME/reduced_mesh.inp                                                   
+#                                                                               
+define/MOHEX/mohex                                                              
+define/MOTET/motet                                                              
+#                                                                               
+# Set AMR refinement. 123 means refine in x,y,z directions                      
+# See LaGriT refine command for more options                                    
+#                                                                               
+define/REFINE_AMR/123                                                           
+#                                                                               
+define/N_OCTREE_REFINE/3                                                        
+define/N_OCTREE_REFINE_M1/2                                                     
+define/N_OCTREE_np1/4                                                           
+define/N_OCTREE_np1_M1/3                                                        
+define/X0/-750.000000000000                                                     
+define/X1/750.000000000000                                                      
+define/Y0/-500.000000000000                                                     
+define/Y1/500.000000000000                                                      
+define/Z0/-100.000000000000                                                     
+define/Z1/100.000000000000                                                      
+define/XMAX/749.997000000000                                                    
+define/XMIN/-749.997000000000                                                   
+define/YMAX/499.997000000000                                                    
+define/YMIN/-499.997000000000                                                   
+define/ZMAX/99.997000000000                                                     
+define/ZMIN/-99.997000000000                                                    
+define/NX/16                                                                    
+define/NY/11                                                                    
+define/NZ/3                                                                     
+finish                                                                          
+#                                                                               
+# Read in DFN mesh                                                              
+#                                                                               
+read/FTYPE/FNAME/MODFN                                                          
+cmo/addatt/MODFN/family_id/VINT/scalar/nelements/linear/permanent/gxaf/0.0      
+finish                                                                          
+geniee                                                                          
+finish                                                                          
+cmo/status/brief                                                                
+ 
+The current-mesh-object(CMO) is: MODFN                                          
+ 
+  1 Mesh Object name: MODFN                                                     
+    number of nodes =            12        number of elements =            6    
+    dimensions geometry =         3        element type =                tri    
+    dimensions topology =         2        3 nodes      3 faces      3 edges    
+    boundary flag =        16000000        status =                   active    
+ 
+ 
+finish                                                                          
+cmo/printatt/MODFN/-xyz-/minmax                                                 
+ATTRIBUTE NAME              MIN               MAX         DIFFERENCE    LENGTH  
+ xic               -5.100000000E+02  5.100000000E+02 1.020000000E+03        12  
+ yic               -3.539400024E+02  3.539400024E+02 7.078800049E+02        12  
+ zic               -5.000000000E+00  5.000000000E+00 1.000000000E+01        12  
+ 
+#                                                                               
+# Octree refined orthogonal mesh based on intersection with DFN mesh            
+#                                                                               
+infile build_octree.mlgi                                                        
+cmo/create/MOHEX///hex                                                          
+createpts/brick/xyz/NX NY NZ/X0 Y0 Z0/X1 Y1 Z1/1 1 1                            
+          Number of nodes:         528                                          
+          Number of elements:         300                                       
+          Number of negative volume elements:           0                       
+          Total volume:     0.300000000000E+09                                  
+cmo/setatt/MOHEX/imt/1 0 0/1                                                    
+       528 values reset for attribute imt1                                      
+ 
+cmo/setatt/MOHEX/itetclr/1 0 0/1                                                
+       300 values reset for attribute itetclr                                   
+ 
+resetpts/itp                                                                    
+geniee                                                                          
+finish                                                                          
+#                                                                               
+# Print to screen and logfiles the extents of the hex mesh and dfn mesh         
+#                                                                               
+cmo/printatt/MOHEX/-xyz-/minmax                                                 
+ATTRIBUTE NAME              MIN               MAX         DIFFERENCE    LENGTH  
+ xic               -7.500000000E+02  7.500000000E+02 1.500000000E+03       528  
+ yic               -5.000000000E+02  5.000000000E+02 1.000000000E+03       528  
+ zic               -1.000000000E+02  1.000000000E+02 2.000000000E+02       528  
+ 
+cmo/select/MODFN                                                                
+cmo/printatt/MODFN/-xyz-/minmax                                                 
+ATTRIBUTE NAME              MIN               MAX         DIFFERENCE    LENGTH  
+ xic               -5.100000000E+02  5.100000000E+02 1.020000000E+03        12  
+ yic               -3.539400024E+02  3.539400024E+02 7.078800049E+02        12  
+ zic               -5.000000000E+00  5.000000000E+00 1.000000000E+01        12  
+ 
+#                                                                               
+# Generate copy of hex mesh for upscaling                                       
+#                                                                               
+cmo/copy/MOHEX_np1/MOHEX                                                        
+#                                                                               
+# Loop through steps to intersect dfn mesh (MODFN) with hex mesh (MOHEX)        
+# and refine hex mesh based on cell intersections. Loop through                 
+# N_OCTREE_REFINE times                                                         
+#                                                                               
+loop/do/NTIMEs/1 N_OCTREE_REFINE 1/loop_end infile intersect_refine.mlgi        
+LOOP: loop nesting level =     1                                                
+define/NTIMEs/1                                                                 
+finish                                                                          
+infile intersect_refine.mlgi                                                    
+#                                                                               
+# Compute mesh to mesh intersection and refine hex mesh                         
+#                                                                               
+intersect_elements/MOHEX/MODFN/if_int                                           
+cmo/select/mohex                                                                
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/mohex/if_int/VINT/scalar/nelements/linear/permanent//0/              
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              3              514            141       25 %                      
+              5              865             35       50 %                      
+              6             1028            176    Total Done                   
+ 
+cmo/select/mohex                                                                
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/mohex/sbox                                                           
+finish                                                                          
+cmo/DELATT/mohex/v12                                                            
+finish                                                                          
+cmo/DELATT/mohex/linkt                                                          
+finish                                                                          
+cmo/DELATT/mohex/v2                                                             
+finish                                                                          
+finish                                                                          
+eltset/erefine/if_int/ne/0                                                      
+ 
+ THE ELTSET erefine                          HAS        176 ELEMENTS            
+pset/prefine/eltset erefine                                                     
+ 
+ THE PSET  prefine  HAS        324 POINTS                                       
+#                                                                               
+# If one wants anisotropic mesh refinement, then the                            
+# variable REFINE_AMR can be set in parameters_octree_dfn.mlgi                  
+#                                                                               
+refine/constant/imt1/linear/element/pset,get,prefine/-1.,0.,0./exclusive/amr REF
+INE_AMR                                                                         
+refine elements:                                                                
+refine hex     :        176                                                     
+cmo/addatt/mohex/itetpar/VINT/scalar/nelements/linear/permanent//0.0            
+finish                                                                          
+cmo/addatt/mohex/itetkid/VINT/scalar/nelements/linear/permanent//0.0            
+finish                                                                          
+cmo/addatt/mohex/itetlev/VINT/scalar/nelements/linear/permanent//0.0            
+finish                                                                          
+cmo/addatt/mohex/xradavg/VDOUBLE/scalar/nnodes/linear/temporary//0.0            
+finish                                                                          
+Element iteration:          1       176                                         
+Octree(PRD) refined elems: old=       300 new=      1708                        
+FILTER_SUBSET:Dudding duplicate points:        1713                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+cmo/DELATT/mohex/xradavg                                                        
+finish                                                                          
+#                                                                               
+# Clean up eltset, pset, and if_int attribute                                   
+#                                                                               
+eltset/erefine/delete                                                           
+ 
+ ELTSET erefine                          DELETED                                
+ 
+pset/prefine/delete                                                             
+ 
+ PSET prefine  DELETED                                                          
+ 
+cmo/DELATT/MOHEX/if_int                                                         
+#                                                                               
+# Print out diagnostics                                                         
+#                                                                               
+quality                                                                         
+ 
+epsilonl, epsilonaspect:   4.0275243E-10  6.5330281E-29                         
+--------------------------------------------                                    
+elements with aspect ratio < .01:                    0                          
+elements with aspect ratio b/w .01 and .02:          0                          
+elements with aspect ratio b/w .02 and .05:          0                          
+elements with aspect ratio b/w .05 and .1 :          0                          
+elements with aspect ratio b/w .1  and .2 :          0                          
+elements with aspect ratio b/w .2  and .5 :          0                          
+elements with aspect ratio b/w .5  and 1. :       1708                          
+min aspect ratio =  0.1000E+01  max aspect ratio =  0.1000E+01                  
+ 
+epsilonvol:   6.6613381E-05                                                     
+---------------------------------------                                         
+element volumes b/w  0.1250E+06 and  0.1895E+06:      1408                      
+element volumes b/w  0.1895E+06 and  0.2872E+06:         0                      
+element volumes b/w  0.2872E+06 and  0.4353E+06:         0                      
+element volumes b/w  0.4353E+06 and  0.6598E+06:         0                      
+element volumes b/w  0.6598E+06 and  0.1000E+07:       300                      
+min volume =   1.2500000E+05  max volume =   1.0000000E+06                      
+-----------------------------------------------------------                     
+      1708 total elements evaluated.                                            
+ 
+cmo/status/brief                                                                
+ 
+The current-mesh-object(CMO) is: mohex                                          
+ 
+  1 Mesh Object name: MODFN                                                     
+    number of nodes =            12        number of elements =            6    
+    dimensions geometry =         3        element type =                tri    
+    dimensions topology =         2        3 nodes      3 faces      3 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  2 Mesh Object name: mohex                                                     
+    number of nodes =          3872        number of elements =         1708    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                   active    
+ 
+  3 Mesh Object name: MOHEX_np1                                                 
+    number of nodes =           528        number of elements =          300    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+ 
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/2                                                                 
+finish                                                                          
+infile intersect_refine.mlgi                                                    
+#                                                                               
+# Compute mesh to mesh intersection and refine hex mesh                         
+#                                                                               
+intersect_elements/MOHEX/MODFN/if_int                                           
+cmo/select/mohex                                                                
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/mohex/if_int/VINT/scalar/nelements/linear/permanent//0/              
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              3             3070            547       25 %                      
+              5             5345            157       50 %                      
+              6             6180            704    Total Done                   
+ 
+cmo/select/mohex                                                                
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/mohex/sbox                                                           
+finish                                                                          
+cmo/DELATT/mohex/v12                                                            
+finish                                                                          
+cmo/DELATT/mohex/linkt                                                          
+finish                                                                          
+cmo/DELATT/mohex/v2                                                             
+finish                                                                          
+finish                                                                          
+eltset/erefine/if_int/ne/0                                                      
+ 
+ THE ELTSET erefine                          HAS        704 ELEMENTS            
+pset/prefine/eltset erefine                                                     
+ 
+ THE PSET  prefine  HAS       1173 POINTS                                       
+#                                                                               
+# If one wants anisotropic mesh refinement, then the                            
+# variable REFINE_AMR can be set in parameters_octree_dfn.mlgi                  
+#                                                                               
+refine/constant/imt1/linear/element/pset,get,prefine/-1.,0.,0./exclusive/amr REF
+INE_AMR                                                                         
+refine elements:                                                                
+refine hex     :        704                                                     
+cmo/addatt/mohex/xradavg/VDOUBLE/scalar/nnodes/linear/temporary//0.0            
+finish                                                                          
+Element iteration:          1       704                                         
+Octree(PRD) refined elems: old=      1708 new=      7340                        
+FILTER_SUBSET:Dudding duplicate points:        7124                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+Element iteration:          1        76                                         
+Octree(PRD) refined elems: old=      7340 new=      7948                        
+FILTER_SUBSET:Dudding duplicate points:         770                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+cmo/DELATT/mohex/xradavg                                                        
+finish                                                                          
+#                                                                               
+# Clean up eltset, pset, and if_int attribute                                   
+#                                                                               
+eltset/erefine/delete                                                           
+ 
+ ELTSET erefine                          DELETED                                
+ 
+pset/prefine/delete                                                             
+ 
+ PSET prefine  DELETED                                                          
+ 
+cmo/DELATT/MOHEX/if_int                                                         
+#                                                                               
+# Print out diagnostics                                                         
+#                                                                               
+quality                                                                         
+ 
+epsilonl, epsilonaspect:   4.0275243E-10  6.5330281E-29                         
+--------------------------------------------                                    
+elements with aspect ratio < .01:                    0                          
+elements with aspect ratio b/w .01 and .02:          0                          
+elements with aspect ratio b/w .02 and .05:          0                          
+elements with aspect ratio b/w .05 and .1 :          0                          
+elements with aspect ratio b/w .1  and .2 :          0                          
+elements with aspect ratio b/w .2  and .5 :          0                          
+elements with aspect ratio b/w .5  and 1. :       7948                          
+min aspect ratio =  0.1000E+01  max aspect ratio =  0.1000E+01                  
+ 
+epsilonvol:   6.6613381E-05                                                     
+---------------------------------------                                         
+element volumes b/w  0.1562E+05 and  0.3590E+05:      5632                      
+element volumes b/w  0.3590E+05 and  0.8247E+05:         0                      
+element volumes b/w  0.8247E+05 and  0.1895E+06:      2016                      
+element volumes b/w  0.1895E+06 and  0.4353E+06:         0                      
+element volumes b/w  0.4353E+06 and  0.1000E+07:       300                      
+min volume =   1.5625000E+04  max volume =   1.0000000E+06                      
+-----------------------------------------------------------                     
+      7948 total elements evaluated.                                            
+ 
+cmo/status/brief                                                                
+ 
+The current-mesh-object(CMO) is: mohex                                          
+ 
+  1 Mesh Object name: MODFN                                                     
+    number of nodes =            12        number of elements =            6    
+    dimensions geometry =         3        element type =                tri    
+    dimensions topology =         2        3 nodes      3 faces      3 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  2 Mesh Object name: mohex                                                     
+    number of nodes =         18692        number of elements =         7948    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                   active    
+ 
+  3 Mesh Object name: MOHEX_np1                                                 
+    number of nodes =           528        number of elements =          300    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+ 
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/3                                                                 
+finish                                                                          
+infile intersect_refine.mlgi                                                    
+#                                                                               
+# Compute mesh to mesh intersection and refine hex mesh                         
+#                                                                               
+intersect_elements/MOHEX/MODFN/if_int                                           
+cmo/select/mohex                                                                
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/mohex/if_int/VINT/scalar/nelements/linear/permanent//0/              
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              3             9231           1926       25 %                      
+              5            16079            594       50 %                      
+              6            18448           2520    Total Done                   
+ 
+cmo/select/mohex                                                                
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/mohex/sbox                                                           
+finish                                                                          
+cmo/DELATT/mohex/v12                                                            
+finish                                                                          
+cmo/DELATT/mohex/linkt                                                          
+finish                                                                          
+cmo/DELATT/mohex/v2                                                             
+finish                                                                          
+finish                                                                          
+eltset/erefine/if_int/ne/0                                                      
+ 
+ THE ELTSET erefine                          HAS       2520 ELEMENTS            
+pset/prefine/eltset erefine                                                     
+ 
+ THE PSET  prefine  HAS       3999 POINTS                                       
+#                                                                               
+# If one wants anisotropic mesh refinement, then the                            
+# variable REFINE_AMR can be set in parameters_octree_dfn.mlgi                  
+#                                                                               
+refine/constant/imt1/linear/element/pset,get,prefine/-1.,0.,0./exclusive/amr REF
+INE_AMR                                                                         
+refine elements:                                                                
+refine hex     :       2520                                                     
+cmo/addatt/mohex/xradavg/VDOUBLE/scalar/nnodes/linear/temporary//0.0            
+finish                                                                          
+Element iteration:          1      2520                                         
+Octree(PRD) refined elems: old=      7948 new=     28108                        
+FILTER_SUBSET:Dudding duplicate points:       25954                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+cmo/DELATT/mohex/xradavg                                                        
+finish                                                                          
+#                                                                               
+# Clean up eltset, pset, and if_int attribute                                   
+#                                                                               
+eltset/erefine/delete                                                           
+ 
+ ELTSET erefine                          DELETED                                
+ 
+pset/prefine/delete                                                             
+ 
+ PSET prefine  DELETED                                                          
+ 
+cmo/DELATT/MOHEX/if_int                                                         
+#                                                                               
+# Print out diagnostics                                                         
+#                                                                               
+quality                                                                         
+ 
+epsilonl, epsilonaspect:   4.0275243E-10  6.5330281E-29                         
+--------------------------------------------                                    
+elements with aspect ratio < .01:                    0                          
+elements with aspect ratio b/w .01 and .02:          0                          
+elements with aspect ratio b/w .02 and .05:          0                          
+elements with aspect ratio b/w .05 and .1 :          0                          
+elements with aspect ratio b/w .1  and .2 :          0                          
+elements with aspect ratio b/w .2  and .5 :          0                          
+elements with aspect ratio b/w .5  and 1. :      28108                          
+min aspect ratio =  0.1000E+01  max aspect ratio =  0.1000E+01                  
+ 
+epsilonvol:   6.6613381E-05                                                     
+---------------------------------------                                         
+element volumes b/w  0.1953E+04 and  0.6801E+04:     20160                      
+element volumes b/w  0.6801E+04 and  0.2368E+05:      5632                      
+element volumes b/w  0.2368E+05 and  0.8247E+05:         0                      
+element volumes b/w  0.8247E+05 and  0.2872E+06:      2016                      
+element volumes b/w  0.2872E+06 and  0.1000E+07:       300                      
+min volume =   1.9531250E+03  max volume =   1.0000000E+06                      
+-----------------------------------------------------------                     
+     28108 total elements evaluated.                                            
+ 
+cmo/status/brief                                                                
+ 
+The current-mesh-object(CMO) is: mohex                                          
+ 
+  1 Mesh Object name: MODFN                                                     
+    number of nodes =            12        number of elements =            6    
+    dimensions geometry =         3        element type =                tri    
+    dimensions topology =         2        3 nodes      3 faces      3 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  2 Mesh Object name: mohex                                                     
+    number of nodes =         66572        number of elements =        28108    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                   active    
+ 
+  3 Mesh Object name: MOHEX_np1                                                 
+    number of nodes =           528        number of elements =          300    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+ 
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/remove                                                            
+finish                                                                          
+#                                                                               
+# See above - except do it once additional time ("np1")                         
+#                                                                               
+loop/do/NTIMEs/1 N_OCTREE_np1 1/loop_end infile intersect_refine_np1.mlgi       
+LOOP: loop nesting level =     1                                                
+define/NTIMEs/1                                                                 
+finish                                                                          
+infile intersect_refine_np1.mlgi                                                
+#                                                                               
+# For comments see intersect_refine.mlgi                                        
+#                                                                               
+intersect_elements/MOHEX_np1/MODFN/if_int                                       
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/MOHEX_np1/if_int/VINT/scalar/nelements/linear/permanent//0/          
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              3              514            141       25 %                      
+              5              865             35       50 %                      
+              6             1028            176    Total Done                   
+ 
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/MOHEX_np1/sbox                                                       
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v12                                                        
+finish                                                                          
+cmo/DELATT/MOHEX_np1/linkt                                                      
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v2                                                         
+finish                                                                          
+finish                                                                          
+eltset/erefine/if_int/ne/0                                                      
+ 
+ THE ELTSET erefine                          HAS        176 ELEMENTS            
+pset/prefine/eltset erefine                                                     
+ 
+ THE PSET  prefine  HAS        324 POINTS                                       
+refine/constant/imt1/linear/element/pset,get,prefine/-1.,0.,0./exclusive/amr REF
+INE_AMR                                                                         
+refine elements:                                                                
+refine hex     :        176                                                     
+cmo/addatt/MOHEX_np1/itetpar/VINT/scalar/nelements/linear/permanent//0.0        
+finish                                                                          
+cmo/addatt/MOHEX_np1/itetkid/VINT/scalar/nelements/linear/permanent//0.0        
+finish                                                                          
+cmo/addatt/MOHEX_np1/itetlev/VINT/scalar/nelements/linear/permanent//0.0        
+finish                                                                          
+cmo/addatt/MOHEX_np1/xradavg/VDOUBLE/scalar/nnodes/linear/temporary//0.0        
+finish                                                                          
+Element iteration:          1       176                                         
+Octree(PRD) refined elems: old=       300 new=      1708                        
+FILTER_SUBSET:Dudding duplicate points:        1713                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+cmo/DELATT/MOHEX_np1/xradavg                                                    
+finish                                                                          
+#                                                                               
+eltset/erefine/delete                                                           
+ 
+ ELTSET erefine                          DELETED                                
+ 
+pset/prefine/delete                                                             
+ 
+ PSET prefine  DELETED                                                          
+ 
+cmo/DELATT/MOHEX_np1/if_int                                                     
+#                                                                               
+quality                                                                         
+ 
+epsilonl, epsilonaspect:   4.0275243E-10  6.5330281E-29                         
+--------------------------------------------                                    
+elements with aspect ratio < .01:                    0                          
+elements with aspect ratio b/w .01 and .02:          0                          
+elements with aspect ratio b/w .02 and .05:          0                          
+elements with aspect ratio b/w .05 and .1 :          0                          
+elements with aspect ratio b/w .1  and .2 :          0                          
+elements with aspect ratio b/w .2  and .5 :          0                          
+elements with aspect ratio b/w .5  and 1. :       1708                          
+min aspect ratio =  0.1000E+01  max aspect ratio =  0.1000E+01                  
+ 
+epsilonvol:   6.6613381E-05                                                     
+---------------------------------------                                         
+element volumes b/w  0.1250E+06 and  0.1895E+06:      1408                      
+element volumes b/w  0.1895E+06 and  0.2872E+06:         0                      
+element volumes b/w  0.2872E+06 and  0.4353E+06:         0                      
+element volumes b/w  0.4353E+06 and  0.6598E+06:         0                      
+element volumes b/w  0.6598E+06 and  0.1000E+07:       300                      
+min volume =   1.2500000E+05  max volume =   1.0000000E+06                      
+-----------------------------------------------------------                     
+      1708 total elements evaluated.                                            
+ 
+cmo/status/brief                                                                
+ 
+The current-mesh-object(CMO) is: MOHEX_np1                                      
+ 
+  1 Mesh Object name: MODFN                                                     
+    number of nodes =            12        number of elements =            6    
+    dimensions geometry =         3        element type =                tri    
+    dimensions topology =         2        3 nodes      3 faces      3 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  2 Mesh Object name: mohex                                                     
+    number of nodes =         66572        number of elements =        28108    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  3 Mesh Object name: MOHEX_np1                                                 
+    number of nodes =          3872        number of elements =         1708    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                   active    
+ 
+ 
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/2                                                                 
+finish                                                                          
+infile intersect_refine_np1.mlgi                                                
+#                                                                               
+# For comments see intersect_refine.mlgi                                        
+#                                                                               
+intersect_elements/MOHEX_np1/MODFN/if_int                                       
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/MOHEX_np1/if_int/VINT/scalar/nelements/linear/permanent//0/          
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              3             3070            547       25 %                      
+              5             5345            157       50 %                      
+              6             6180            704    Total Done                   
+ 
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/MOHEX_np1/sbox                                                       
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v12                                                        
+finish                                                                          
+cmo/DELATT/MOHEX_np1/linkt                                                      
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v2                                                         
+finish                                                                          
+finish                                                                          
+eltset/erefine/if_int/ne/0                                                      
+ 
+ THE ELTSET erefine                          HAS        704 ELEMENTS            
+pset/prefine/eltset erefine                                                     
+ 
+ THE PSET  prefine  HAS       1173 POINTS                                       
+refine/constant/imt1/linear/element/pset,get,prefine/-1.,0.,0./exclusive/amr REF
+INE_AMR                                                                         
+refine elements:                                                                
+refine hex     :        704                                                     
+cmo/addatt/MOHEX_np1/xradavg/VDOUBLE/scalar/nnodes/linear/temporary//0.0        
+finish                                                                          
+Element iteration:          1       704                                         
+Octree(PRD) refined elems: old=      1708 new=      7340                        
+FILTER_SUBSET:Dudding duplicate points:        7124                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+Element iteration:          1        76                                         
+Octree(PRD) refined elems: old=      7340 new=      7948                        
+FILTER_SUBSET:Dudding duplicate points:         770                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+cmo/DELATT/MOHEX_np1/xradavg                                                    
+finish                                                                          
+#                                                                               
+eltset/erefine/delete                                                           
+ 
+ ELTSET erefine                          DELETED                                
+ 
+pset/prefine/delete                                                             
+ 
+ PSET prefine  DELETED                                                          
+ 
+cmo/DELATT/MOHEX_np1/if_int                                                     
+#                                                                               
+quality                                                                         
+ 
+epsilonl, epsilonaspect:   4.0275243E-10  6.5330281E-29                         
+--------------------------------------------                                    
+elements with aspect ratio < .01:                    0                          
+elements with aspect ratio b/w .01 and .02:          0                          
+elements with aspect ratio b/w .02 and .05:          0                          
+elements with aspect ratio b/w .05 and .1 :          0                          
+elements with aspect ratio b/w .1  and .2 :          0                          
+elements with aspect ratio b/w .2  and .5 :          0                          
+elements with aspect ratio b/w .5  and 1. :       7948                          
+min aspect ratio =  0.1000E+01  max aspect ratio =  0.1000E+01                  
+ 
+epsilonvol:   6.6613381E-05                                                     
+---------------------------------------                                         
+element volumes b/w  0.1562E+05 and  0.3590E+05:      5632                      
+element volumes b/w  0.3590E+05 and  0.8247E+05:         0                      
+element volumes b/w  0.8247E+05 and  0.1895E+06:      2016                      
+element volumes b/w  0.1895E+06 and  0.4353E+06:         0                      
+element volumes b/w  0.4353E+06 and  0.1000E+07:       300                      
+min volume =   1.5625000E+04  max volume =   1.0000000E+06                      
+-----------------------------------------------------------                     
+      7948 total elements evaluated.                                            
+ 
+cmo/status/brief                                                                
+ 
+The current-mesh-object(CMO) is: MOHEX_np1                                      
+ 
+  1 Mesh Object name: MODFN                                                     
+    number of nodes =            12        number of elements =            6    
+    dimensions geometry =         3        element type =                tri    
+    dimensions topology =         2        3 nodes      3 faces      3 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  2 Mesh Object name: mohex                                                     
+    number of nodes =         66572        number of elements =        28108    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  3 Mesh Object name: MOHEX_np1                                                 
+    number of nodes =         18692        number of elements =         7948    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                   active    
+ 
+ 
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/3                                                                 
+finish                                                                          
+infile intersect_refine_np1.mlgi                                                
+#                                                                               
+# For comments see intersect_refine.mlgi                                        
+#                                                                               
+intersect_elements/MOHEX_np1/MODFN/if_int                                       
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/MOHEX_np1/if_int/VINT/scalar/nelements/linear/permanent//0/          
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              3             9231           1926       25 %                      
+              5            16079            594       50 %                      
+              6            18448           2520    Total Done                   
+ 
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/MOHEX_np1/sbox                                                       
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v12                                                        
+finish                                                                          
+cmo/DELATT/MOHEX_np1/linkt                                                      
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v2                                                         
+finish                                                                          
+finish                                                                          
+eltset/erefine/if_int/ne/0                                                      
+ 
+ THE ELTSET erefine                          HAS       2520 ELEMENTS            
+pset/prefine/eltset erefine                                                     
+ 
+ THE PSET  prefine  HAS       3999 POINTS                                       
+refine/constant/imt1/linear/element/pset,get,prefine/-1.,0.,0./exclusive/amr REF
+INE_AMR                                                                         
+refine elements:                                                                
+refine hex     :       2520                                                     
+cmo/addatt/MOHEX_np1/xradavg/VDOUBLE/scalar/nnodes/linear/temporary//0.0        
+finish                                                                          
+Element iteration:          1      2520                                         
+Octree(PRD) refined elems: old=      7948 new=     28108                        
+FILTER_SUBSET:Dudding duplicate points:       25954                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+cmo/DELATT/MOHEX_np1/xradavg                                                    
+finish                                                                          
+#                                                                               
+eltset/erefine/delete                                                           
+ 
+ ELTSET erefine                          DELETED                                
+ 
+pset/prefine/delete                                                             
+ 
+ PSET prefine  DELETED                                                          
+ 
+cmo/DELATT/MOHEX_np1/if_int                                                     
+#                                                                               
+quality                                                                         
+ 
+epsilonl, epsilonaspect:   4.0275243E-10  6.5330281E-29                         
+--------------------------------------------                                    
+elements with aspect ratio < .01:                    0                          
+elements with aspect ratio b/w .01 and .02:          0                          
+elements with aspect ratio b/w .02 and .05:          0                          
+elements with aspect ratio b/w .05 and .1 :          0                          
+elements with aspect ratio b/w .1  and .2 :          0                          
+elements with aspect ratio b/w .2  and .5 :          0                          
+elements with aspect ratio b/w .5  and 1. :      28108                          
+min aspect ratio =  0.1000E+01  max aspect ratio =  0.1000E+01                  
+ 
+epsilonvol:   6.6613381E-05                                                     
+---------------------------------------                                         
+element volumes b/w  0.1953E+04 and  0.6801E+04:     20160                      
+element volumes b/w  0.6801E+04 and  0.2368E+05:      5632                      
+element volumes b/w  0.2368E+05 and  0.8247E+05:         0                      
+element volumes b/w  0.8247E+05 and  0.2872E+06:      2016                      
+element volumes b/w  0.2872E+06 and  0.1000E+07:       300                      
+min volume =   1.9531250E+03  max volume =   1.0000000E+06                      
+-----------------------------------------------------------                     
+     28108 total elements evaluated.                                            
+ 
+cmo/status/brief                                                                
+ 
+The current-mesh-object(CMO) is: MOHEX_np1                                      
+ 
+  1 Mesh Object name: MODFN                                                     
+    number of nodes =            12        number of elements =            6    
+    dimensions geometry =         3        element type =                tri    
+    dimensions topology =         2        3 nodes      3 faces      3 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  2 Mesh Object name: mohex                                                     
+    number of nodes =         66572        number of elements =        28108    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  3 Mesh Object name: MOHEX_np1                                                 
+    number of nodes =         66572        number of elements =        28108    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                   active    
+ 
+ 
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/4                                                                 
+finish                                                                          
+infile intersect_refine_np1.mlgi                                                
+#                                                                               
+# For comments see intersect_refine.mlgi                                        
+#                                                                               
+intersect_elements/MOHEX_np1/MODFN/if_int                                       
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/MOHEX_np1/if_int/VINT/scalar/nelements/linear/permanent//0/          
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              1             8399           2448        5 %                      
+              6            64578           9512    Total Done                   
+ 
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/MOHEX_np1/sbox                                                       
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v12                                                        
+finish                                                                          
+cmo/DELATT/MOHEX_np1/linkt                                                      
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v2                                                         
+finish                                                                          
+finish                                                                          
+eltset/erefine/if_int/ne/0                                                      
+ 
+ THE ELTSET erefine                          HAS       9512 ELEMENTS            
+pset/prefine/eltset erefine                                                     
+ 
+ THE PSET  prefine  HAS      14691 POINTS                                       
+refine/constant/imt1/linear/element/pset,get,prefine/-1.,0.,0./exclusive/amr REF
+INE_AMR                                                                         
+refine elements:                                                                
+refine hex     :       9512                                                     
+cmo/addatt/MOHEX_np1/xradavg/VDOUBLE/scalar/nnodes/linear/temporary//0.0        
+finish                                                                          
+Element iteration:          1      9512                                         
+Octree(PRD) refined elems: old=     28108 new=    104204                        
+FILTER_SUBSET:Dudding duplicate points:       98894                             
+ 
+filter/1,0,0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+geniee                                                                          
+finish                                                                          
+cmo/DELATT/MOHEX_np1/xradavg                                                    
+finish                                                                          
+#                                                                               
+eltset/erefine/delete                                                           
+ 
+ ELTSET erefine                          DELETED                                
+ 
+pset/prefine/delete                                                             
+ 
+ PSET prefine  DELETED                                                          
+ 
+cmo/DELATT/MOHEX_np1/if_int                                                     
+#                                                                               
+quality                                                                         
+ 
+epsilonl, epsilonaspect:   4.0275243E-10  6.5330281E-29                         
+--------------------------------------------                                    
+elements with aspect ratio < .01:                    0                          
+elements with aspect ratio b/w .01 and .02:          0                          
+elements with aspect ratio b/w .02 and .05:          0                          
+elements with aspect ratio b/w .05 and .1 :          0                          
+elements with aspect ratio b/w .1  and .2 :          0                          
+elements with aspect ratio b/w .2  and .5 :          0                          
+elements with aspect ratio b/w .5  and 1. :     104204                          
+min aspect ratio =  0.1000E+01  max aspect ratio =  0.1000E+01                  
+ 
+epsilonvol:   6.6613381E-05                                                     
+---------------------------------------                                         
+element volumes b/w  0.2441E+03 and  0.1289E+04:     76096                      
+element volumes b/w  0.1289E+04 and  0.6801E+04:     20160                      
+element volumes b/w  0.6801E+04 and  0.3590E+05:      5632                      
+element volumes b/w  0.3590E+05 and  0.1895E+06:      2016                      
+element volumes b/w  0.1895E+06 and  0.1000E+07:       300                      
+min volume =   2.4414062E+02  max volume =   1.0000000E+06                      
+-----------------------------------------------------------                     
+    104204 total elements evaluated.                                            
+ 
+cmo/status/brief                                                                
+ 
+The current-mesh-object(CMO) is: MOHEX_np1                                      
+ 
+  1 Mesh Object name: MODFN                                                     
+    number of nodes =            12        number of elements =            6    
+    dimensions geometry =         3        element type =                tri    
+    dimensions topology =         2        3 nodes      3 faces      3 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  2 Mesh Object name: mohex                                                     
+    number of nodes =         66572        number of elements =        28108    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                 inactive    
+ 
+  3 Mesh Object name: MOHEX_np1                                                 
+    number of nodes =        247300        number of elements =       104204    
+    dimensions geometry =         3        element type =                hex    
+    dimensions topology =         3        8 nodes      6 faces     12 edges    
+    boundary flag =        16000000        status =                   active    
+ 
+ 
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/remove                                                            
+finish                                                                          
+#                                                                               
+finish                                                                          
+#                                                                               
+# Identify cells in hex mesh that are intersected by DFN mesh                   
+#                                                                               
+# This is the last pass through intersect_elements in order to figure out       
+# which cells in the fully refined hex mesh are intersected by the dfn mesh     
+#                                                                               
+intersect_elements/MOHEX/MODFN/if_int                                           
+cmo/select/mohex                                                                
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/mohex/if_int/VINT/scalar/nelements/linear/permanent//0/              
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              1             8399           2448        5 %                      
+              6            64578           9512    Total Done                   
+ 
+cmo/select/mohex                                                                
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/mohex/sbox                                                           
+finish                                                                          
+cmo/DELATT/mohex/v12                                                            
+finish                                                                          
+cmo/DELATT/mohex/linkt                                                          
+finish                                                                          
+cmo/DELATT/mohex/v2                                                             
+finish                                                                          
+finish                                                                          
+eltset/einter/if_int/ne/0                                                       
+ 
+ THE ELTSET einter                           HAS       9512 ELEMENTS            
+pset/pinter/eltset einter                                                       
+ 
+ THE PSET  pinter  HAS      14691 POINTS                                        
+#                                                                               
+# Use the itetclr(cell) and imt(vertex) attribute to hold the information       
+#                                                                               
+cmo/setatt/MOHEX/itetclr/1 0 0/1                                                
+     28108 values reset for attribute itetclr                                   
+ 
+cmo/setatt/MOHEX/itetclr/eltset get einter/2                                    
+      9512 values reset for attribute itetclr                                   
+ 
+cmo/setatt/MOHEX/imt/1 0 0/1                                                    
+     31011 values reset for attribute imt1                                      
+ 
+cmo/setatt/MOHEX/imt/pset get pinter/2                                          
+     14691 values reset for attribute imt1                                      
+ 
+#                                                                               
+# Output final hex mesh                                                         
+#                                                                               
+#dump / avs2 / tmp_hex_refine.inp / MOHEX                                       
+#                                                                               
+# Same as above but for np1 hex mesh                                            
+#                                                                               
+intersect_elements/MOHEX_np1/MODFN/if_int                                       
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/MOHEX_np1/if_int/VINT/scalar/nelements/linear/permanent//0/          
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              1            30784           9487        5 %                      
+              6           240772          37392    Total Done                   
+ 
+cmo/select/MOHEX_np1                                                            
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/MOHEX_np1/sbox                                                       
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v12                                                        
+finish                                                                          
+cmo/DELATT/MOHEX_np1/linkt                                                      
+finish                                                                          
+cmo/DELATT/MOHEX_np1/v2                                                         
+finish                                                                          
+finish                                                                          
+eltset/einter/if_int/ne/0                                                       
+ 
+ THE ELTSET einter                           HAS      37392 ELEMENTS            
+pset/pinter/eltset einter                                                       
+ 
+ THE PSET  pinter  HAS      56925 POINTS                                        
+#                                                                               
+# See above                                                                     
+#                                                                               
+cmo/setatt/MOHEX_np1/itetclr/1 0 0/1                                            
+    104204 values reset for attribute itetclr                                   
+ 
+cmo/setatt/MOHEX_np1/itetclr/eltset get einter/2                                
+     37392 values reset for attribute itetclr                                   
+ 
+cmo/setatt/MOHEX_np1/imt/1 0 0/1                                                
+    112845 values reset for attribute imt1                                      
+ 
+cmo/setatt/MOHEX_np1/imt/pset get pinter/2                                      
+     56925 values reset for attribute imt1                                      
+ 
+#dump / avs2 / tmp_hex_np1_refine.inp / MOHEX_np1                               
+#                                                                               
+# Convert the hex mesh to a tet mesh                                            
+#                                                                               
+infile hex_to_tet.mlgi                                                          
+#                                                                               
+# Convert the octree hex mesh to tet mesh by connecting the                     
+# octree vertex collection to a Delaunay mesh                                   
+#                                                                               
+cmo/create/MOTET                                                                
+copypts/MOTET/MOHEX                                                             
+copypts added nodes          1 to      31011                                    
+cmo/select/MOTET                                                                
+filter 1 0 0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+rmpoint/compress                                                                
+         0 points removed and          0 elements removed.                      
+RMPOINT: new point count is        31011                                        
+RMPOINT: new element count is          0                                        
+cmo/setatt/MOTET/imt/1 0 0/1                                                    
+Warning: nelements = 0                                                          
+     31011 values reset for attribute imt1                                      
+ 
+cmo/setatt/MOTET/itp/1 0 0/0                                                    
+Warning: nelements = 0                                                          
+     31011 values reset for attribute itp1                                      
+ 
+#                                                                               
+# Sort and reorder the nodes based on coordinates                               
+#                                                                               
+sort/MOTET/index/ascending/ikey/xic yic zic                                     
+cmo/addatt/motet/ikey/vint/scalar/nnodes///gax/0                                
+finish                                                                          
+ SORT: order key written to attribute: ikey                                     
+ 
+reorder/MOTET/ikey                                                              
+cmo/DELATT/MOTET/ikey                                                           
+#                                                                               
+# Connect                                                                       
+#                                                                               
+connect/noadd                                                                   
+ Coordinates of enclosing tetrahedron are:                                      
+          -0.18750D+04   -0.12500D+04   -0.50000D+03                            
+          -0.18750D+04    0.37500D+04    0.00000D+00                            
+          -0.18750D+04   -0.12500D+04    0.50000D+03                            
+           0.56250D+04    0.00000D+00    0.00000D+00                            
+ ntets=     32763     node index=     5000     nlstfail=       0 %done=  17.61  
+ ntets=     63290     node index=    10000     nlstfail=       0 %done=  34.01  
+ ntets=     94375     node index=    15000     nlstfail=       0 %done=  50.71  
+ ntets=    123618     node index=    20000     nlstfail=       0 %done=  66.43  
+ ntets=    151591     node index=    25000     nlstfail=       0 %done=  81.46  
+ ntets=    175125     node index=    30000     nlstfail=       0 %done=  94.11  
+ 
+ The mesh is now complete!                                                      
+ 
+LaGriT FINISH: connect                                                          
+ 
+cmo/setatt/MOTET/itetclr/1 0 0/1                                                
+    176660 values reset for attribute itetclr                                   
+ 
+resetpts/itp                                                                    
+geniee                                                                          
+finish                                                                          
+#                                                                               
+# Do the same for np1 mesh                                                      
+#                                                                               
+cmo/create/MOTET_np1                                                            
+copypts/MOTET_np1/MOHEX_np1                                                     
+copypts added nodes          1 to     112845                                    
+cmo/select/MOTET_np1                                                            
+filter 1 0 0                                                                    
+FILTER:Use internal epsilonl value =   0.402752434674E-09                       
+FILTER:Dudding duplicate points:           0                                    
+rmpoint/compress                                                                
+         0 points removed and          0 elements removed.                      
+RMPOINT: new point count is       112845                                        
+RMPOINT: new element count is          0                                        
+cmo/setatt/MOTET_np1/imt/1 0 0/1                                                
+Warning: nelements = 0                                                          
+    112845 values reset for attribute imt1                                      
+ 
+cmo/setatt/MOTET_np1/itp/1 0 0/0                                                
+Warning: nelements = 0                                                          
+    112845 values reset for attribute itp1                                      
+ 
+#                                                                               
+# See above                                                                     
+#                                                                               
+sort/MOTET_np1/index/ascending/ikey/xic yic zic                                 
+cmo/addatt/MOTET_np1/ikey/vint/scalar/nnodes///gax/0                            
+finish                                                                          
+ SORT: order key written to attribute: ikey                                     
+ 
+reorder/MOTET_np1/ikey                                                          
+cmo/DELATT/MOTET_np1/ikey                                                       
+#                                                                               
+connect/noadd                                                                   
+ Coordinates of enclosing tetrahedron are:                                      
+          -0.18750D+04   -0.12500D+04   -0.50000D+03                            
+          -0.18750D+04    0.37500D+04    0.00000D+00                            
+          -0.18750D+04   -0.12500D+04    0.50000D+03                            
+           0.56250D+04    0.00000D+00    0.00000D+00                            
+ ntets=     31523     node index=     5000     nlstfail=       0 %done=   4.66  
+ ntets=     64606     node index=    10000     nlstfail=       0 %done=   9.54  
+ ntets=     98617     node index=    15000     nlstfail=       0 %done=  14.56  
+ ntets=    131669     node index=    20000     nlstfail=       0 %done=  19.45  
+ ntets=    162738     node index=    25000     nlstfail=       0 %done=  24.03  
+ ntets=    193317     node index=    30000     nlstfail=       0 %done=  28.55  
+ ntets=    223326     node index=    35000     nlstfail=       0 %done=  32.98  
+ ntets=    253808     node index=    40000     nlstfail=       0 %done=  37.48  
+ ntets=    284777     node index=    45000     nlstfail=       0 %done=  42.06  
+ ntets=    315079     node index=    50000     nlstfail=       0 %done=  46.53  
+ ntets=    344933     node index=    55000     nlstfail=       0 %done=  50.94  
+ ntets=    375399     node index=    60000     nlstfail=       0 %done=  55.44  
+ ntets=    405884     node index=    65000     nlstfail=       0 %done=  59.94  
+ ntets=    435663     node index=    70000     nlstfail=       0 %done=  64.34  
+ ntets=    465423     node index=    75000     nlstfail=       0 %done=  68.74  
+ ntets=    495010     node index=    80000     nlstfail=       0 %done=  73.11  
+ ntets=    523232     node index=    85000     nlstfail=       0 %done=  77.28  
+ ntets=    548817     node index=    90000     nlstfail=       0 %done=  81.05  
+ ntets=    573852     node index=    95000     nlstfail=       0 %done=  84.75  
+ ntets=    597050     node index=   100000     nlstfail=       0 %done=  88.18  
+ ntets=    619370     node index=   105000     nlstfail=       0 %done=  91.47  
+ ntets=    640885     node index=   110000     nlstfail=       0 %done=  94.65  
+ 
+ The mesh is now complete!                                                      
+ 
+LaGriT FINISH: connect                                                          
+ 
+cmo/setatt/MOTET_np1/itetclr/1 0 0/1                                            
+    650183 values reset for attribute itetclr                                   
+ 
+resetpts/itp                                                                    
+geniee                                                                          
+finish                                                                          
+#                                                                               
+finish                                                                          
+#                                                                               
+# Modify the hex data structure from a full octree data structure               
+# to one in which only the highest level of refined hex is maintained           
+# and all parent cells are stripped out of the data structure                   
+#                                                                               
+grid2grid/tree_to_fe/mohex2/MOHEX                                               
+cmo/copy/mohex2/mohex                                                           
+finish                                                                          
+eltset/-parentset-/itetkid/gt/0                                                 
+ 
+ THE ELTSET -parentset-                      HAS       3476 ELEMENTS            
+finish                                                                          
+rmpoint/element/eltset,get,-parentset-                                          
+ Dudded      35561 points plus parents, and        3476 elements removed.       
+finish                                                                          
+rmpoint/compress                                                                
+     35561 points removed and          0 elements removed.                      
+RMPOINT: new point count is        31011                                        
+RMPOINT: new element count is      24632                                        
+finish                                                                          
+resetpts/itp                                                                    
+geniee                                                                          
+finish                                                                          
+finish                                                                          
+eltset/-parentset-/delete                                                       
+ 
+ ELTSET -parentset-                      DELETED                                
+ 
+finish                                                                          
+quality                                                                         
+ 
+epsilonl, epsilonaspect:   4.0275243E-10  6.5330281E-29                         
+--------------------------------------------                                    
+elements with aspect ratio < .01:                    0                          
+elements with aspect ratio b/w .01 and .02:          0                          
+elements with aspect ratio b/w .02 and .05:          0                          
+elements with aspect ratio b/w .05 and .1 :          0                          
+elements with aspect ratio b/w .1  and .2 :          0                          
+elements with aspect ratio b/w .2  and .5 :          0                          
+elements with aspect ratio b/w .5  and 1. :      24632                          
+min aspect ratio =  0.1000E+01  max aspect ratio =  0.1000E+01                  
+ 
+epsilonvol:   6.6613381E-05                                                     
+---------------------------------------                                         
+element volumes b/w  0.1953E+04 and  0.6801E+04:     20160                      
+element volumes b/w  0.6801E+04 and  0.2368E+05:      3112                      
+element volumes b/w  0.2368E+05 and  0.8247E+05:         0                      
+element volumes b/w  0.8247E+05 and  0.2872E+06:      1312                      
+element volumes b/w  0.2872E+06 and  0.1000E+07:        48                      
+min volume =   1.9531250E+03  max volume =   1.0000000E+06                      
+-----------------------------------------------------------                     
+     24632 total elements evaluated.                                            
+ 
+finish                                                                          
+#dump / avs / octree_hex_mesh.inp / MOHEX                                       
+#                                                                               
+cmo/delete/MOHEX                                                                
+     Released Mesh Object: mohex                                                
+cmo/select/mohex2                                                               
+#                                                                               
+# Remove all but the most refined hex cells                                     
+#                                                                               
+loop/do/NTIMEs/0 N_OCTREE_REFINE_M1 1/loop_end infile remove_cells.mlgi         
+LOOP: loop nesting level =     1                                                
+define/NTIMEs/0                                                                 
+finish                                                                          
+infile remove_cells.mlgi                                                        
+#                                                                               
+# Remove cells from hex mesh based on the level of refinement                   
+# itetlev is the refinement level. Original mesh itetlev=0                      
+#                                                                               
+eltset/edelete/itetlev/eq/NTIMEs                                                
+ 
+ THE ELTSET edelete                          HAS         48 ELEMENTS            
+rmpoint/element/eltset get edelete                                              
+ Dudded         78 points plus parents, and          48 elements removed.       
+eltset/edelete/release                                                          
+ 
+Attribute release    not found in mesh object mohex2                            
+ 
+rmpoint/compress                                                                
+        78 points removed and          0 elements removed.                      
+RMPOINT: new point count is        30933                                        
+RMPOINT: new element count is      24584                                        
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/1                                                                 
+finish                                                                          
+infile remove_cells.mlgi                                                        
+#                                                                               
+# Remove cells from hex mesh based on the level of refinement                   
+# itetlev is the refinement level. Original mesh itetlev=0                      
+#                                                                               
+eltset/edelete/itetlev/eq/NTIMEs                                                
+ 
+ THE ELTSET edelete                          HAS       1312 ELEMENTS            
+rmpoint/element/eltset get edelete                                              
+ Dudded       1582 points plus parents, and        1312 elements removed.       
+eltset/edelete/release                                                          
+ 
+Attribute release    not found in mesh object mohex2                            
+ 
+rmpoint/compress                                                                
+      1582 points removed and          0 elements removed.                      
+RMPOINT: new point count is        29351                                        
+RMPOINT: new element count is      23272                                        
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/2                                                                 
+finish                                                                          
+infile remove_cells.mlgi                                                        
+#                                                                               
+# Remove cells from hex mesh based on the level of refinement                   
+# itetlev is the refinement level. Original mesh itetlev=0                      
+#                                                                               
+eltset/edelete/itetlev/eq/NTIMEs                                                
+ 
+ THE ELTSET edelete                          HAS       3112 ELEMENTS            
+rmpoint/element/eltset get edelete                                              
+ Dudded       3426 points plus parents, and        3112 elements removed.       
+eltset/edelete/release                                                          
+ 
+Attribute release    not found in mesh object mohex2                            
+ 
+rmpoint/compress                                                                
+      3426 points removed and          0 elements removed.                      
+RMPOINT: new point count is        25925                                        
+RMPOINT: new element count is      20160                                        
+#                                                                               
+finish                                                                          
+finish                                                                          
+define/NTIMEs/remove                                                            
+finish                                                                          
+#                                                                               
+cmo/select/mohex2                                                               
+cmo/DELATT/mohex2/if_int                                                        
+intersect_elements/mohex2/MODFN/if_int                                          
+cmo/select/mohex2                                                               
+finish                                                                          
+kdtree/build                                                                    
+cmo/addatt//v2/INT/scalar/scalar/constant/temporary//2.0                        
+finish                                                                          
+cmo/addatt//linkt/VINT/v2/nelements//temporary/x/0.0                            
+finish                                                                          
+cmo/addatt//v12/INT/scalar/scalar/constant/temporary//12.0                      
+finish                                                                          
+cmo/addatt//sbox/VDOUBLE/v12/nelements/linear/temporary/x/0.0                   
+finish                                                                          
+finish                                                                          
+cmo/addatt/mohex2/if_int/VINT/scalar/nelements/linear/permanent//0/             
+finish                                                                          
+ 
+         Element    Elems Searched  Elements Found  Percent Done                
+              1             8522           2448        5 %                      
+              6            65986           9512    Total Done                   
+ 
+cmo/select/mohex2                                                               
+finish                                                                          
+kdtree/release                                                                  
+cmo/DELATT/mohex2/sbox                                                          
+finish                                                                          
+cmo/DELATT/mohex2/v12                                                           
+finish                                                                          
+cmo/DELATT/mohex2/linkt                                                         
+finish                                                                          
+cmo/DELATT/mohex2/v2                                                            
+finish                                                                          
+finish                                                                          
+cmo/select/mohex2                                                               
+eltset/edelete/if_int/eq/0                                                      
+ 
+ THE ELTSET edelete                          HAS      10648 ELEMENTS            
+rmpoint/element/eltset get edelete                                              
+ Dudded      11234 points plus parents, and       10648 elements removed.       
+eltset/edelete/release                                                          
+ 
+Attribute release    not found in mesh object mohex2                            
+ 
+rmpoint/compress                                                                
+     11234 points removed and          0 elements removed.                      
+RMPOINT: new point count is        14691                                        
+RMPOINT: new element count is       9512                                        
+#                                                                               
+dump/avs/mohex2.inp/mohex2                                                      
+cmo/modatt/-def-/-def-/ioflag/x                                                 
+finish                                                                          
+dump/avs/MOTET_np1.inp/MOTET_np1                                                
+cmo/modatt/-def-/-def-/ioflag/x                                                 
+finish                                                                          
+dump/avs/MOTET.inp/MOTET                                                        
+cmo/modatt/-def-/-def-/ioflag/x                                                 
+finish                                                                          
+#                                                                               
+cmo/select/MOTET                                                                
+#                                                                               
+#                                                                               
+cmo/modatt/MOTET/itp/ioflag/l                                                   
+cmo/modatt/MOTET/isn/ioflag/l                                                   
+cmo/modatt/MOTET/icr/ioflag/l                                                   
+# #                                                                             
+define/ZONE/1                                                                   
+define/FOUT/boundary_top                                                        
+pset/top/attribute/zic/1 0 0/gt/ZMAX                                            
+ 
+ THE PSET  top  HAS        577 POINTS                                           
+pset/top/zone/FOUT/ascii/ZONE                                                   
+PSET: THERE ARE  1 PSETS DEFINED                                                
+  top                                                                           
+PSET: Appended .zone to the file name                                           
+PSET: OUTPUT top    1 PSETS TO FILE                                             
+define/ZONE/2                                                                   
+define/FOUT/boundary_bottom                                                     
+pset/bottom/attribute/zic/1 0 0/lt/ZMIN                                         
+ 
+ THE PSET  bottom  HAS        577 POINTS                                        
+pset/bottom/zone/FOUT/ascii/ZONE                                                
+PSET: THERE ARE  2 PSETS DEFINED                                                
+  top               bottom                                                      
+PSET: Appended .zone to the file name                                           
+PSET: OUTPUT bottom    1 PSETS TO FILE                                          
+define/ZONE/3                                                                   
+define/FOUT/boundary_left_w                                                     
+pset/left_w/attribute/xic/1 0 0/lt/XMIN                                         
+ 
+ THE PSET  left_w  HAS         33 POINTS                                        
+pset/left_w/zone/FOUT/ascii/ZONE                                                
+PSET: THERE ARE  3 PSETS DEFINED                                                
+  top               bottom            left_w                                    
+PSET: Appended .zone to the file name                                           
+PSET: OUTPUT left_w    1 PSETS TO FILE                                          
+define/ZONE/4                                                                   
+define/FOUT/boundary_front_n                                                    
+pset/front_n/attribute/yic/1 0 0/gt/YMAX                                        
+ 
+ THE PSET  front_n  HAS        127 POINTS                                       
+pset/front_n/zone/FOUT/ascii/ZONE                                               
+PSET: THERE ARE  4 PSETS DEFINED                                                
+  top               bottom            left_w            front_n                 
+PSET: Appended .zone to the file name                                           
+PSET: OUTPUT front_n    1 PSETS TO FILE                                         
+define/ZONE/5                                                                   
+define/FOUT/boundary_right_e                                                    
+pset/right_e/attribute/xic/1 0 0/gt/XMAX                                        
+ 
+ THE PSET  right_e  HAS         33 POINTS                                       
+pset/right_e/zone/FOUT/ascii/ZONE                                               
+PSET: THERE ARE  5 PSETS DEFINED                                                
+  top               bottom            left_w            front_n                 
+  right_e                                                                       
+PSET: Appended .zone to the file name                                           
+PSET: OUTPUT right_e    1 PSETS TO FILE                                         
+define/ZONE/6                                                                   
+define/FOUT/boundary_back_s                                                     
+pset/back_s/attribute/yic/1 0 0/lt/YMIN                                         
+ 
+ THE PSET  back_s  HAS        127 POINTS                                        
+pset/back_s/zone/FOUT/ascii/ZONE                                                
+PSET: THERE ARE  6 PSETS DEFINED                                                
+  top               bottom            left_w            front_n                 
+  right_e           back_s                                                      
+PSET: Appended .zone to the file name                                           
+PSET: OUTPUT back_s    1 PSETS TO FILE                                          
+dump/pflotran/full_mesh/MOTET/nofilter_zero                                     
+ 
+*** Construct and Compress Sparse Matrix:3D ***                                 
+   *** Compress Area Coefficient Values ***                                     
+ 
+AMatbld3d_stor: Matrix compress_eps:  0.1000000E-07                             
+AMatbld3d_stor: Local epsilon:  0.1000000E-14                                   
+AMatbld3d_stor: *****Zero Negative Coefficients ******                          
+AMatbld3d_stor: Number of 'zero' (< compress_eps) coefs         0               
+AMatbld3d_stor: npoints =    31011  ncoefs =     267063                         
+AMatbld3d_stor: Number of unique coefs =        45                              
+AMatbld3d_stor: Maximum num. connections to a node =         18                 
+PFLOTRAN total CELL nodes =        31011                                        
+AMatbld3d_stor: Volume min =   1.9531250E+03                                    
+AMatbld3d_stor: Volume max =   4.5312500E+05                                    
+AMatbld3d_stor: Total Volume:   3.0000000E+08                                   
+AMatbld3d_stor: abs(Aij/xij) min =   0.0000000E+00                              
+AMatbld3d_stor: abs(Aij/xij) max =   1.1250000E+02                              
+AMatbld3d_stor: (Aij/xij) max =   0.0000000E+00                                 
+AMatbld3d_stor: (Aij/xij) min =  -1.1250000E+02                                 
+PFLOTRAN will not filter zero coefs.                                            
+PFLOTRAN coefficient from matbld Aij/Xij  max  =   0.0000000E+00                
+PFLOTRAN total matbld matrix coefficients   =    267063                         
+PFLOTRAN matrix  i>j (written)              =    118026                         
+PFLOTRAN matrix  i<=j (not written)        =     149037                         
+PFLOTRAN zero coefs < epsilon    (written)  =         0                         
+ 
+PFLOTRAN total CONNECTIONS written         =     118026                         
+PFLOTRAN coefficient  Aij min              =   1.4648437E+01                    
+PFLOTRAN coefficient  Aij max              =   5.6250000E+03                    
+AMatbld3d_stor Matrix coefficient values stored as scalar area/distance         
+ 
+*** SPARSE COEFFICIENT MATRIX for PFLOTRAN SUCCESSFUL ***                       
+ 
+3D Matrix Coefficient file written with name full_mesh.uge                      
+ 
+dump/avs2/octree_dfn.inp/MOTET                                                  
+cmo/modatt/-def-/-def-/ioflag/x                                                 
+finish                                                                          
+dump/coord/octree_dfn/MOTET                                                     
+Writing FEHM coord/geom file: octree_dfn.fehm                                   
+dump/stor/octree_dfn/MOTET                                                      
+ 
+*** Construct and Compress Sparse Matrix:3D ***                                 
+   *** Compress Area Coefficient Values ***                                     
+ 
+AMatbld3d_stor: Matrix compress_eps:  0.1000000E-07                             
+AMatbld3d_stor: Local epsilon:  0.1000000E-14                                   
+AMatbld3d_stor: *****Zero Negative Coefficients ******                          
+AMatbld3d_stor: Number of 'zero' (< compress_eps) coefs         0               
+AMatbld3d_stor: npoints =    31011  ncoefs =     267063                         
+AMatbld3d_stor: Number of unique coefs =        45                              
+AMatbld3d_stor: Maximum num. connections to a node =         18                 
+AMatbld3d_stor: Volume min =   1.9531250E+03                                    
+AMatbld3d_stor: Volume max =   4.5312500E+05                                    
+AMatbld3d_stor: Total Volume:   3.0000000E+08                                   
+AMatbld3d_stor: abs(Aij/xij) min =   0.0000000E+00                              
+AMatbld3d_stor: abs(Aij/xij) max =   1.1250000E+02                              
+AMatbld3d_stor: (Aij/xij) max =   0.0000000E+00                                 
+AMatbld3d_stor: (Aij/xij) min =  -1.1250000E+02                                 
+AMatbld3d_stor Matrix coefficient values stored as scalar area/distance         
+AMatbld3d_stor Matrix compression used for graph and coefficient values         
+ascii STOR file written with name octree_dfn.stor                               
+ 
+*** SPARSE COEFFICIENT MATRIX _astor SUCCESSFUL ***                             
+ 
+3D Matrix Coefficient file written with name octree_dfn.stor                    
+ 
+dump/zone_imt/octree_dfn/MOTET                                                  
+*********dump_material_lists********                                            
+Minimum material ID value =      1                                              
+Maximum material ID value =      1                                              
+Total possible materials  =      1                                              
+Material           1 has     31011 nodes. #nodes/nnodes is    1.00000000000     
+dump/zone_outside/octree_dfn/MOTET                                              
+*********dump_outside_list********                                              
+Voronoi Areas used for outside faces.                                           
+ 
+assign_quadrant_id epsilon for zero:   1.0000000E-15                            
+cmo/addatt/motet/top/vint/scalar/nnodes/linear/permanent/afgx/-5.0/             
+finish                                                                          
+Face top           1 has       577 nodes.                                       
+top        Sum Voronoi      Area_x          Area_y          Area_z              
+                       0.1000000E+06   0.8937500E+05   0.1500000E+07            
+cmo/addatt/motet/bottom/vint/scalar/nnodes/linear/permanent/afgx/-5.0/          
+finish                                                                          
+Face bottom        2 has       577 nodes.                                       
+bottom     Sum Voronoi      Area_x          Area_y          Area_z              
+                       0.1000000E+06   0.8937500E+05   0.1500000E+07            
+cmo/addatt/motet/left_w/vint/scalar/nnodes/linear/permanent/afgx/-5.0/          
+finish                                                                          
+Face left_w        3 has        33 nodes.                                       
+left_w     Sum Voronoi      Area_x          Area_y          Area_z              
+                       0.2000000E+06   0.2000000E+05   0.9500000E+05            
+cmo/addatt/motet/right_e/vint/scalar/nnodes/linear/permanent/afgx/-5.0/         
+finish                                                                          
+Face right_e       5 has        33 nodes.                                       
+right_e    Sum Voronoi      Area_x          Area_y          Area_z              
+                       0.2000000E+06   0.2000000E+05   0.9500000E+05            
+cmo/addatt/motet/back_n/vint/scalar/nnodes/linear/permanent/afgx/-5.0/          
+finish                                                                          
+Face back_n        6 has       127 nodes.                                       
+back_n     Sum Voronoi      Area_x          Area_y          Area_z              
+                       0.2000000E+05   0.3000000E+06   0.8916667E+05            
+cmo/addatt/motet/front_s/vint/scalar/nnodes/linear/permanent/afgx/-5.0/         
+finish                                                                          
+Face front_s       4 has       127 nodes.                                       
+front_s    Sum Voronoi      Area_x          Area_y          Area_z              
+                       0.2000000E+05   0.3000000E+06   0.8916667E+05            
+cmo/DELATT//top                                                                 
+finish                                                                          
+cmo/DELATT//bottom                                                              
+finish                                                                          
+cmo/DELATT//left_w                                                              
+finish                                                                          
+cmo/DELATT//right_e                                                             
+finish                                                                          
+cmo/DELATT//back_n                                                              
+finish                                                                          
+cmo/DELATT//front_s                                                             
+finish                                                                          
+finish                                                                          
+LaGriT successfully completed                                                   
