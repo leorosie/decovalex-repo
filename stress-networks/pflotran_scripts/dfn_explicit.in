@@ -1,0 +1,241 @@
+#================================================
+
+SIMULATION
+  SIMULATION_TYPE SUBSURFACE
+  PROCESS_MODELS
+    SUBSURFACE_FLOW flow
+      MODE RICHARDS
+    /
+    SUBSURFACE_TRANSPORT transport
+      MODE GIRT
+      OPTIONS
+        SKIP_RESTART
+      /
+    /
+  /
+
+#END
+
+RESTART
+  FILENAME ./dfn_explicit-flow-restart.h5
+  RESET_TO_TIME_ZERO
+END
+END
+SUBSURFACE
+
+DFN
+
+#=========================== discretization ===================================
+GRID
+  TYPE unstructured_explicit full_mesh_vol_area.uge 
+  GRAVITY 0.d0 0.d0 0.d0
+END
+
+
+#=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+END
+
+DATASET Permeability
+  FILENAME dfn_properties.h5
+END
+
+#=========================== chemistry ========================================
+CHEMISTRY
+  PRIMARY_SPECIES
+    Tracer1
+  /
+  OUTPUT
+    ALL
+    TOTAL
+  /
+#  LOG_FORMULATION
+END
+
+#=========================== material properties ==============================
+MATERIAL_PROPERTY soil1
+  ID 1
+  POROSITY 1.0d0
+  TORTUOSITY 1.d0
+  ROCK_DENSITY 2700.d0
+  CHARACTERISTIC_CURVES default
+  PERMEABILITY
+    DATASET Permeability
+  /
+END
+
+
+#=========================== characteristic curves ============================
+CHARACTERISTIC_CURVES default
+  SATURATION_FUNCTION VAN_GENUCHTEN
+    M 0.5d0
+    ALPHA  1.d-4
+    LIQUID_RESIDUAL_SATURATION 0.1d0
+    MAX_CAPILLARY_PRESSURE 1.d8
+  /
+  PERMEABILITY_FUNCTION MUALEM_VG_LIQ
+    M 0.5d0
+    LIQUID_RESIDUAL_SATURATION 0.1d0
+  /
+END
+
+#=========================== output options ===================================
+OUTPUT
+  ACKNOWLEDGE_VTK_FLAW
+  SNAPSHOT_FILE
+#    NO_PRINT_INITIAL
+    TIMES y 0.d0 1.d0 2.d0 3.d0 4.d0 5.d0 10.d0 20.d0 25.d0 50.d0 75.d0 100.d0
+  /
+  skip
+  OBSERVATION_FILE
+    PERIODIC TIME 1. y between 0. y and 10. y
+    PERIODIC TIME 10. y between 0. y and 100. y
+  /
+  noskip
+  FORMAT VTK
+  MASS_FLOWRATE
+  MASS_BALANCE_FILE
+    PERIODIC TIMESTEP 1
+    TOTAL_MASS_REGIONS
+      inflow
+      outflow
+    /
+  /
+END
+
+#=========================== times ============================================
+TIME
+  INITIAL_TIMESTEP_SIZE  1.d-6 y
+  FINAL_TIME 1000.d0 y
+    MINIMUM_TIMESTEP_SIZE 1.d-8 y
+  MAXIMUM_TIMESTEP_SIZE 0.1 y at 1. y
+  MAXIMUM_TIMESTEP_SIZE 0.5 y at 2. y
+  MAXIMUM_TIMESTEP_SIZE 1.0 y at 5. y
+  MAXIMUM_TIMESTEP_SIZE 5.0 y at 10. y
+  MAXIMUM_TIMESTEP_SIZE 10. y at 100. y
+END
+
+#=========================== regions ==========================================
+REGION All
+  COORDINATES
+    -1.d20 -1.d20 -1.d20
+    1.d20 1.d20 1.d20
+  /
+END 
+
+REGION inflow
+  FILE boundary_left_w.ex
+END
+
+REGION outflow
+  FILE boundary_right_e.ex
+END
+
+#========================== obs points =======================================
+OBSERVATION obs
+  REGION outflow
+END
+
+#=========================== flow conditions ==================================
+
+FLOW_CONDITION initial
+  TYPE
+     LIQUID_PRESSURE dirichlet 
+  /
+  LIQUID_PRESSURE 1.d6
+END
+
+
+FLOW_CONDITION outflow 
+  TYPE 
+     LIQUID_PRESSURE dirichlet
+  /
+  LIQUID_PRESSURE 1.d6
+END
+
+FLOW_CONDITION inflow
+  TYPE
+    LIQUID_PRESSURE dirichlet
+  /
+  LIQUID_PRESSURE 1.001d6
+END
+
+
+
+#=========================== transport conditions ==================================
+TRANSPORT_CONDITION initial
+  TYPE DIRICHLET #_ZERO_GRADIENT
+  CONSTRAINT_LIST
+    0.d0 initial
+  /
+END
+skip
+TRANSPORT_CONDITION tracer
+  TYPE ZERO_GRADIENT #_ZERO_GRADIENT
+  CONSTRAINT_LIST
+    0.d0 tracer
+  /
+END
+noskip
+TRANSPORT_CONDITION inflow
+  TYPE ZERO_GRADIENT
+  TIME_UNITS d
+  CONSTRAINT_LIST
+    0.d0 tracer
+    1.d0 initial
+  /
+END
+
+TRANSPORT_CONDITION outflow
+  TYPE ZERO_GRADIENT
+  CONSTRAINT_LIST
+    0.d0 initial
+  /
+END
+
+#=========================== constraints ==================================
+CONSTRAINT initial
+  CONCENTRATIONS
+    Tracer1 1.d-20 T
+  /
+END
+
+CONSTRAINT tracer
+  CONCENTRATIONS
+    Tracer1 1.d0 T
+  /
+END
+#=========================== condition couplers ===============================
+# initial condition
+INITIAL_CONDITION initial
+  FLOW_CONDITION initial
+  TRANSPORT_CONDITION initial
+  REGION All
+END
+skip
+INITIAL_CONDITION initial
+  FLOW_CONDITION inflow
+  TRANSPORT_CONDITION tracer
+  REGION inflow
+END
+noskip
+BOUNDARY_CONDITION INFLOW
+  FLOW_CONDITION inflow
+  TRANSPORT_CONDITION inflow
+  REGION inflow
+END
+
+BOUNDARY_CONDITION OUTFLOW
+  FLOW_CONDITION outflow
+  TRANSPORT_CONDITION outflow
+  REGION outflow
+END
+
+#=========================== stratigraphy couplers ============================
+STRATA
+  REGION All 
+  MATERIAL soil1
+END
+
+END_SUBSURFACE
