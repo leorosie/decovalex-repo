@@ -214,7 +214,7 @@ for ifrac in range(DFN.num_frac):
     # if delta < 0:
     #     print("error!")
 
-
+DFN.perm = DFN.aperture**2/12
 DFN.dump_hydraulic_values("stress")
 DFN.dump_hydraulic_values(f"../hydraulic_values/{case_name}")
 

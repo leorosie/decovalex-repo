@@ -52,6 +52,6 @@ print("\nRows of the DataFrame:")
 for index, row in df.iterrows():
     #print(f"Row {index}: {row.to_dict()}")
     #print(f"{row['Case ID']}")
-    cmd = f"python apply_stress_4frac.py {row['Case ID']} {row['sigma_xx']} {row['sigma_yy']} {row['sigma_zz']}"
+    cmd = f"python3.11 apply_stress_4frac.py {row['Case ID']} {row['sigma_xx']} {row['sigma_yy']} {row['sigma_zz']}"
     print(cmd) 
     subprocess.call(cmd, shell = True)
