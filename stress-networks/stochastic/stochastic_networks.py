@@ -9,12 +9,17 @@ Created on Thu Sep 10 12:04:03 2020
 import os, sys
 from pydfnworks import * 
 import numpy as np
-
-src_path = os.getcwd()
-
+from pathlib import Path
 import sys
+import shutil 
 
 sample_index = int(sys.argv[1])
+
+
+src_path = Path.cwd() 
+output_dir = src_path / "stochastic_samples" / f"sample_x{sample_index:02d}"
+output_dir.mkdir(parents=True, exist_ok=True)
+
 jobname = f"{src_path}/sample_x{sample_index:02d}"
 
 DFN = DFNWORKS(jobname)
@@ -93,41 +98,17 @@ DFN.add_fracture_family(shape="ell",
                             "beta": 0.8,
                         })
 
-# DFN.add_user_fract(shape='ell',
-#                     radii=600,
-#                     translation=[-400, 0, 400],
-#                     normal_vector=[30, 15, 60],
-#                     number_of_vertices=5,
-#                     aperture=1.0e-3)
-
-# DFN.add_user_fract(shape='ell',
-#                     radii=1000,
-#                     translation=[0, 0, 0],
-#                     normal_vector=[95, 5, 5],
-#                     # normal_vector=[1, 0, 0],
-#                     number_of_vertices=5,
-#                     aperture=1.0e-3)
-
-# DFN.add_user_fract(shape='ell',
-#                     radii=600,
-#                     aspect_ratio=1,
-#                     translation=[400, 0, 200],
-#                     normal_vector=[30, 15, 60],
-#                     number_of_vertices=5,
-#                     aperture=1.0e-3)
-
-# DFN.add_user_fract(shape='ell',
-#                     radii=600,
-#                     aspect_ratio=1,
-#                     translation=[400, 0, -400],
-#                     normal_vector=[30, 15, 60],
-#                     number_of_vertices=5,
-#                     aperture=5.0e-5)
-
 DFN.make_working_directory(delete=True)
 DFN.print_domain_parameters()
 DFN.check_input()
 DFN.create_network()
 DFN.dump_hydraulic_values()
-DFN.output_report()
+# DFN.output_report()
 
+files_to_move = ["aperture.dat", "perm.dat", "dfnGen_output/normal_vectors.dat", 
+                 "dfnGen_output/polygons.dat", "dfnGen_output/radii_Final.dat", 
+                 "dfnGen_output/translations.dat"]
+
+for file in files_to_move:
+    file = Path(file)
+    shutil.copyfile(file, output_dir / file.name )
