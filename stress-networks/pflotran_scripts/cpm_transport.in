@@ -1,0 +1,275 @@
+#================================================
+
+SIMULATION
+  SIMULATION_TYPE SUBSURFACE
+  PROCESS_MODELS
+    SUBSURFACE_FLOW flow
+      MODE RICHARDS
+    /
+    SUBSURFACE_TRANSPORT transport
+      MODE GIRT
+      OPTIONS
+        SKIP_RESTART
+      /
+    /
+  /
+RESTART
+  FILENAME cpm_pflotran-restart.h5
+  RESET_TO_TIME_ZERO
+END
+
+END
+SUBSURFACE
+
+#=========================== numerical methods ================================
+
+NUMERICAL_METHODS transport
+  NEWTON_SOLVER
+    ITOL 1.d-8
+  END
+END
+
+#=========================== discretization ===================================
+GRID
+  TYPE structured
+  NXYZ 50 50 50
+  DXYZ
+    20.
+    20.
+    20.
+  /
+  GRAVITY 0.d0 0.d0 0.d0
+END
+
+#=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+END
+
+CHEMISTRY
+  PRIMARY_SPECIES
+    Tracer1
+#    Tracer2
+#    Tracer3
+  /
+skip
+  RADIOACTIVE_DECAY_REACTION
+    REACTION Tracer2 <->
+    HALF_LIFE 100.0 y
+  /
+  SORPTION
+    ISOTHERM_REACTIONS
+      Tracer3
+        DISTRIBUTION_COEFFICIENT 4000.d0
+      /
+    /
+  /
+noskip
+#  DATABASE /Users/rleone/software/pflotran/database/hanford.dat
+  OUTPUT
+    ALL
+    TOTAL
+#    TOTAL_SORBED
+  /
+  TRUNCATE_CONCENTRATION 1.d-21
+END
+
+#=========================== datasets==========================================
+DATASET permX
+  FILENAME anisotropic_k.h5
+  HDF5_DATASET_NAME PermeabilityX
+END
+
+DATASET permY
+  FILENAME anisotropic_k.h5   
+  HDF5_DATASET_NAME PermeabilityY
+END
+
+DATASET permZ
+  FILENAME  anisotropic_k.h5      
+  HDF5_DATASET_NAME PermeabilityZ
+END
+
+DATASET Tortuosity
+  FILENAME tortuosity.h5
+  HDF5_DATASET_NAME Tortuosity
+END
+
+DATASET Porosity
+  FILENAME porosity.h5
+  HDF5_DATASET_NAME Porosity
+END
+
+#=========================== material properties ==============================
+MATERIAL_PROPERTY soil1
+  ID 1
+  POROSITY DATASET Porosity
+  TORTUOSITY DATASET Tortuosity 
+  ROCK_DENSITY 2700.d0
+  CHARACTERISTIC_CURVES default
+  PERMEABILITY
+    ANISOTROPIC
+    DATASET perm
+  /
+END
+
+#=========================== characteristic curves ============================
+CHARACTERISTIC_CURVES default
+  SATURATION_FUNCTION VAN_GENUCHTEN
+    M 0.5d0
+    ALPHA  1.d-4
+    LIQUID_RESIDUAL_SATURATION 0.1d0
+    MAX_CAPILLARY_PRESSURE 1.d8
+  /
+  PERMEABILITY_FUNCTION MUALEM_VG_LIQ
+    M 0.5d0
+    LIQUID_RESIDUAL_SATURATION 0.1d0
+  /
+END
+
+#=========================== output options ===================================
+OUTPUT
+  MASS_BALANCE_FILE
+    PERIODIC TIMESTEP 1
+  /
+END
+
+#=========================== times ============================================
+TIME
+  INITIAL_TIMESTEP_SIZE  1.d-6 y
+  FINAL_TIME 100000.d0 y
+  MINIMUM_TIMESTEP_SIZE 1.d-6 y
+  MAXIMUM_TIMESTEP_SIZE 0.1 y at 0. y
+  MAXIMUM_TIMESTEP_SIZE 1.0 y at 10. y
+  MAXIMUM_TIMESTEP_SIZE 50.0 y at 100. y
+  MAXIMUM_TIMESTEP_SIZE 500.0 y at 1000. y
+  MAXIMUM_TIMESTEP_SIZE 5000.0 y at 10000. y
+  MAXIMUM_TIMESTEP_SIZE 50000. y at 100000. y
+END
+
+
+
+#=========================== regions ==========================================
+REGION All
+  COORDINATES
+    -1.d20 -1.d20 -1.d20
+    1.d20 1.d20 1.d20
+  /
+END 
+
+
+REGION inflow
+  FACE west
+  COORDINATES
+    0.0  0.0   0.0
+    0.0  1000. 1000.
+  /
+END
+
+REGION outflow
+  FACE east
+  COORDINATES
+    1000. 0.0   0.0
+    1000. 1000. 1000.
+  /
+END
+
+#=========================== flow conditions ==================================
+
+FLOW_CONDITION initial
+  TYPE
+     LIQUID_PRESSURE DIRICHLET
+  /
+  LIQUID_PRESSURE 1.d6
+END
+
+FLOW_CONDITION outflow 
+  TYPE 
+     LIQUID_PRESSURE dirichlet
+  /
+  LIQUID_PRESSURE 1.d6
+END
+
+FLOW_CONDITION inflow
+  TYPE
+    LIQUID_PRESSURE DIRICHLET
+  /
+  LIQUID_PRESSURE 1.001d6
+END
+
+TRANSPORT_CONDITION initial
+  TYPE DIRICHLET 
+  CONSTRAINT_LIST
+    0.d0 initial
+  /
+END
+
+TRANSPORT_CONDITION tracer
+  TYPE DIRICHLET 
+  CONSTRAINT_LIST
+    0.d0 tracer
+  /
+END
+
+TRANSPORT_CONDITION inflow
+  TYPE ZERO_GRADIENT
+  TIME_UNITS d
+  CONSTRAINT_LIST
+      0.d0 tracer
+      1.d0 initial
+  /
+END
+
+TRANSPORT_CONDITION outflow
+  TYPE ZERO_GRADIENT
+    CONSTRAINT_LIST
+      0.d0 initial
+  /  
+END
+
+#=========================== constraints ==================================
+CONSTRAINT initial
+  CONCENTRATIONS
+    Tracer1 1.d-20 T
+  #  Tracer2 1.d-20 T
+ #   Tracer3 1.d-20 T
+  /
+END
+
+CONSTRAINT tracer
+  CONCENTRATIONS
+    Tracer1 1.0d0 T
+ #   Tracer2 1.0d0 T
+ #   Tracer3 1.0d0 T
+  /
+END
+
+#=========================== condition couplers ===============================
+# initial condition
+INITIAL_CONDITION initial
+  FLOW_CONDITION initial
+  TRANSPORT_CONDITION initial
+  REGION All
+END
+
+
+
+BOUNDARY_CONDITION INFLOW
+  FLOW_CONDITION inflow
+  TRANSPORT_CONDITION inflow
+  REGION inflow
+END
+
+BOUNDARY_CONDITION OUTFLOW
+  FLOW_CONDITION outflow
+  TRANSPORT_CONDITION outflow
+  REGION outflow
+END
+
+#=========================== stratigraphy couplers ============================
+STRATA
+#  REGION All 
+  FILE materials.h5
+END
+
+END_SUBSURFACE
